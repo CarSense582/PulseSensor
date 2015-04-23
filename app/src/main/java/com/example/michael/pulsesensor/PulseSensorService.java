@@ -43,7 +43,7 @@ public class PulseSensorService extends DataService<PulseSensor> {
     final private char END_CHAR   = '\n';
 
     private byte[] data = new byte[3];
-    private static final long SCAN_PERIOD = 2000;
+    private static final long SCAN_PERIOD = 4000;
 
     final private static char[] hexArray = { '0', '1', '2', '3', '4', '5', '6',
             '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
@@ -82,7 +82,7 @@ public class PulseSensorService extends DataService<PulseSensor> {
                 data = intent.getByteArrayExtra(RBLService.EXTRA_DATA);
                 readAnalogInValue(data);
             } else if (RBLService.ACTION_GATT_RSSI.equals(action)) {
-                sensor.bpm = Integer.parseInt(intent.getStringExtra(RBLService.EXTRA_DATA));
+                //sensor.bpm = Integer.parseInt(intent.getStringExtra(RBLService.EXTRA_DATA));
             }
         }
     };
@@ -117,7 +117,18 @@ public class PulseSensorService extends DataService<PulseSensor> {
                 if(c == END_CHAR) {
                     rxBuf[rxPos] = '\0';
                     //sensor.bpm = Integer.parseInt(rxBuf);
-                    System.out.println(rxBuf);
+                    String s = new String(rxBuf,0,rxPos);
+                    if(s.length() > 1) {
+                        System.out.println(s);
+                        if (s.charAt(0) == 'B') {
+                            try {
+                                int val = Integer.parseInt(s.substring(1));
+                                sensor.bpm = val;
+                            } catch (NumberFormatException e) {
+                                //drop on floor
+                            }
+                        }
+                    }
                     //Restart txn
                     rxPos = 0;
                     rxTxnProgress = false;
@@ -292,7 +303,7 @@ public class PulseSensorService extends DataService<PulseSensor> {
     }
     @Override
     public void readPeriodic() {
-        sensor.bpm += 100;
+        //sensor.bpm += 100;
     }
     //Writes use sensor to work with actual hadware
     @Override
